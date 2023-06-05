@@ -20,4 +20,8 @@ class InMemoryAccountRepository implements AccountRepository {
         return Optional.ofNullable(accountMap.get(id))
                 .orElseThrow(() -> AccountNotFoundException.forId(id));
     }
+
+    void clear(){
+        accountMap.clear();
+    }
 }

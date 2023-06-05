@@ -1,5 +1,6 @@
 package pl.mbcode.nn.bank.account;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -9,15 +10,24 @@ import pl.mbcode.nn.bank.command.CreateAccountCommand;
 import pl.mbcode.nn.bank.validation.account.create.CreateCommandNotValidException;
 
 import java.math.BigDecimal;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class AccountServiceTest {
 
+    private final InMemoryAccountRepository accountRepository = new InMemoryAccountRepository();
+
     private final AccountService accountService = AccountService.builder()
-            .accountRepository(new InMemoryAccountRepository())
+            .accountRepository(accountRepository)
             .build();
+
+    @BeforeEach
+    void before() {
+        accountRepository.clear();
+    }
 
     @Test
     @DisplayName("Account should be created successfully")
@@ -71,5 +81,35 @@ class AccountServiceTest {
                         .initialBalanceInPLN(BigDecimal.valueOf(-0.1))
                         .build()
         );
+    }
+
+    @Test
+    @DisplayName("Should return account by id")
+    void getById() {
+//        given
+        Account account = Account.builder()
+                .owner(new Owner("name", "surname"))
+                .balances(Map.of(Currency.USD, BigDecimal.TWO))
+                .build();
+        accountRepository.save(account);
+
+//        when
+        Account savedAccount = accountService.getAccountById(account.getId());
+
+//        then
+        assertNotNull(savedAccount);
+    }
+
+    @Test
+    @DisplayName("Should throw account not found exception")
+    void accountNotFound() {
+//        given
+        UUID id = UUID.randomUUID();
+
+//        when
+        Executable executable = () -> accountService.getAccountById(id);
+
+//        then
+        assertThrows(AccountNotFoundException.class, executable);
     }
 }
