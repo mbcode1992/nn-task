@@ -1,0 +1,6 @@
+server:
+  port: 8080
+
+app:
+  nbp:
+    api-base-url: http://api.nbp.pl/api

@@ -23,7 +23,7 @@ class Account {
     private final Map<Currency, BigDecimal> balances;
 
     public static Account create(CreateAccountCommand command) {
-        log.info("Creating account with initial parameters {}", command.toString());
+        log.debug("Creating account with initial parameters {}", command.toString());
         Owner owner = new Owner(
                 command.getOwnerName(),
                 command.getOwnerSurname()
