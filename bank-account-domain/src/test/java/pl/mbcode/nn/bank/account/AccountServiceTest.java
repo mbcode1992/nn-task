@@ -7,9 +7,11 @@ import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import pl.mbcode.nn.bank.command.CreateAccountCommand;
+import pl.mbcode.nn.bank.command.ExchangeMoneyCommand;
 import pl.mbcode.nn.bank.validation.account.create.CreateCommandNotValidException;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -22,6 +24,7 @@ class AccountServiceTest {
 
     private final AccountService accountService = AccountService.builder()
             .accountRepository(accountRepository)
+            .exchangeRateProvider((oldCurrency, newCurrency) -> 4.1933)
             .build();
 
     @BeforeEach
@@ -46,7 +49,28 @@ class AccountServiceTest {
                 () -> assertNotNull(account.getId()),
                 () -> assertEquals("properName", account.getOwner().name()),
                 () -> assertEquals("properSurname", account.getOwner().surname()),
-                () -> assertEquals(1.0, account.getBalances().get(Currency.PLN).doubleValue())
+                () -> assertEquals(1.00, account.getBalances().get(Currency.PLN).doubleValue())
+        );
+    }
+
+    @Test
+    @DisplayName("Account should be created successfully")
+    void createAndRound() {
+//        given
+        CreateAccountCommand command = CreateAccountCommand.builder()
+                .initialBalanceInPLN(BigDecimal.valueOf(2.819123123))
+                .ownerName("properName")
+                .ownerSurname("properSurname")
+                .build();
+//        when
+        Account account = accountService.create(command);
+
+//        then
+        assertAll(
+                () -> assertNotNull(account.getId()),
+                () -> assertEquals("properName", account.getOwner().name()),
+                () -> assertEquals("properSurname", account.getOwner().surname()),
+                () -> assertEquals(2.82, account.getBalances().get(Currency.PLN).doubleValue())
         );
     }
 
@@ -111,5 +135,31 @@ class AccountServiceTest {
 
 //        then
         assertThrows(AccountNotFoundException.class, executable);
+    }
+
+    @Test
+    @DisplayName("Should exchange money")
+    void successExchange() {
+//        given
+        Account account = Account.builder()
+                .owner(new Owner("name", "surname"))
+                .balances(new HashMap<>(Map.of(Currency.USD, BigDecimal.TEN)))
+                .build();
+        accountRepository.save(account);
+        ExchangeMoneyCommand command = ExchangeMoneyCommand.builder()
+                .oldCurrency(Currency.USD)
+                .newCurrency(Currency.PLN)
+                .accountId(account.getId())
+                .amount(BigDecimal.ONE)
+                .build();
+
+//        when
+        Account accountAfterExchange = accountService.exchangeMoney(command);
+
+//        then
+        assertAll(
+                () -> assertEquals(9.00, accountAfterExchange.getBalances().get(Currency.USD).doubleValue()),
+                () -> assertEquals(4.19, accountAfterExchange.getBalances().get(Currency.PLN).doubleValue())
+        );
     }
 }
