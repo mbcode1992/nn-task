@@ -3,7 +3,7 @@ package pl.mbcode.nn.bank.validation.account.create;
 
 import pl.mbcode.nn.bank.exception.SingleReasonException;
 
-class CreateCommandNotValidException extends SingleReasonException {
+public class CreateCommandNotValidException extends SingleReasonException {
 
     private final String errorCode;
 

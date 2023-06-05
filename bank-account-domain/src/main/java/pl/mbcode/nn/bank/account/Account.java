@@ -24,7 +24,10 @@ class Account {
 
     public static Account create(CreateAccountCommand command) {
         log.info("Creating account with initial parameters {}", command.toString());
-        Owner owner = new Owner(command.getOwnerName(), command.getOwnerSurname());
+        Owner owner = new Owner(
+                command.getOwnerName(),
+                command.getOwnerSurname()
+        );
         return Account.builder()
                 .owner(owner)
                 .balances(Map.of(Currency.PLN, command.getInitialBalanceInPLN()))
