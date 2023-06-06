@@ -42,7 +42,7 @@ class Account {
         log.debug("Exchanging money with following parameters {} and exchangeRate {} ", command.toString(), exchangeRate);
         BigDecimal currentBalance = balances.getOrDefault(command.getOldCurrency(), BigDecimal.ZERO);
         if (currentBalance.compareTo(command.getAmount()) <= 0) {
-            throw new InsufficientAccountBalanceException(currentBalance);
+            throw new InsufficientAccountBalanceException(currentBalance, command.getOldCurrency());
         }
         BigDecimal exchangedAmount = command.getAmount()
                 .multiply(BigDecimal.valueOf(exchangeRate))

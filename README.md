@@ -10,3 +10,4 @@
 - Maven 3+
 - Java 20
 - Spring boot
+- Enable annotation processing for lombok and mapstruct

@@ -17,9 +17,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.boot.version>3.1.0</spring.boot.version>
         <map-struct.version>1.5.3.Final</map-struct.version>
-        <feign.version>3.1.4</feign.version>
+        <feign.version>4.0.3</feign.version>
         <openapi.version>1.7.0</openapi.version>
         <snakeyaml.version>2.0</snakeyaml.version>
+        <spring-cloud.version>2022.0.1</spring-cloud.version>
     </properties>
 
     <dependencyManagement>

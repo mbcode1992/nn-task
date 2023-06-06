@@ -5,7 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import pl.mbcode.nn.bank.account.dto.AccountDto;
 import pl.mbcode.nn.bank.account.dto.CreateAccountCommandDto;
+import pl.mbcode.nn.bank.account.dto.ExchangeMoneyCommandDto;
 import pl.mbcode.nn.bank.command.CreateAccountCommand;
+import pl.mbcode.nn.bank.command.ExchangeMoneyCommand;
 
 import java.util.UUID;
 
@@ -31,6 +33,17 @@ class AccountController {
             @PathVariable("id") UUID id
     ) {
         Account account = accountService.getAccountById(id);
+        return AccountMapper.get().toDto(account);
+    }
+
+    @PostMapping("/{id}/exchange")
+    @ResponseStatus(HttpStatus.OK)
+    public AccountDto exchangeMoney(
+            @PathVariable("id") UUID id,
+            @RequestBody ExchangeMoneyCommandDto dto
+    ) {
+        ExchangeMoneyCommand command = AccountMapper.get().toCommand(dto, id);
+        Account account = accountService.exchangeMoney(command);
         return AccountMapper.get().toDto(account);
     }
 }

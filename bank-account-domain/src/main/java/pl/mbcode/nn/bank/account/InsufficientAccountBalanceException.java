@@ -5,8 +5,8 @@ import pl.mbcode.nn.bank.exception.SingleReasonException;
 import java.math.BigDecimal;
 
 class InsufficientAccountBalanceException extends SingleReasonException {
-    public InsufficientAccountBalanceException(BigDecimal currentBalance) {
-        super(String.format("You account balance is %.2f and it insufficient to make this exchange", currentBalance));
+    public InsufficientAccountBalanceException(BigDecimal currentBalance, Currency oldCurrency) {
+        super(String.format("You account balance in %s is %.2f and it insufficient to make this exchange", oldCurrency, currentBalance));
     }
 
     @Override
