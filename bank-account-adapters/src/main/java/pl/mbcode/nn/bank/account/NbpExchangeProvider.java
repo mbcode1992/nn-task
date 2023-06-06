@@ -3,6 +3,7 @@ package pl.mbcode.nn.bank.account;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import pl.mbcode.nn.bank.integration.nbp.NbpClient;
 import pl.mbcode.nn.bank.integration.nbp.model.RateDto;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @AllArgsConstructor
+@Slf4j
 class NbpExchangeProvider implements ExchangeRateProvider {
 
     private static final Currency BASE_RATES_CURRENCY = Currency.PLN;
@@ -27,10 +29,11 @@ class NbpExchangeProvider implements ExchangeRateProvider {
 
     @Override
     public double getExchangeRate(Currency oldCurrency, Currency newCurrency) {
-        if (BASE_RATES_CURRENCY.equals(newCurrency)) {
-            return exchangeRatesMap.get(oldCurrency);
-        }
-        return 1.0 / exchangeRatesMap.get(newCurrency);
+        double resolvedRate = BASE_RATES_CURRENCY.equals(newCurrency)
+                ? exchangeRatesMap.get(oldCurrency)
+                : 1.0 / exchangeRatesMap.get(newCurrency);
+        log.info("Resolved exchange rate from {} to {} is {}", oldCurrency, newCurrency, resolvedRate);
+        return resolvedRate;
     }
 
     @PostConstruct
@@ -44,6 +47,7 @@ class NbpExchangeProvider implements ExchangeRateProvider {
     }
 
     void refreshRates() {
+        log.info("Refreshing exchange rates");
         List<RateDto> rateDtoList = nbpClient.getRates().get(0).rates();
         rateDtoList.stream()
                 .filter(rateDto -> IMPLEMENTED_RATES.contains(rateDto.code()))
