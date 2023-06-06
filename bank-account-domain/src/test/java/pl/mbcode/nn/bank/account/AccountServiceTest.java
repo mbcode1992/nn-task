@@ -192,6 +192,26 @@ class AccountServiceTest {
         assertThrows(InsufficientAccountBalanceException.class, executable);
     }
 
+    @Test
+    @DisplayName("Should not throw InsufficientAccountBalanceException")
+    void shouldMakeExchangeWithAllMoney() {
+//        given
+        Account account = simpleAccount();
+        accountRepository.save(account);
+        ExchangeMoneyCommand command = ExchangeMoneyCommand.builder()
+                .oldCurrency(Currency.USD)
+                .newCurrency(Currency.PLN)
+                .accountId(account.getId())
+                .oldCurrencyAmount(BigDecimal.valueOf(10))
+                .build();
+
+//        when
+        Executable executable = () -> accountService.exchangeMoney(command);
+
+//        then
+        assertDoesNotThrow(executable);
+    }
+
     @ParameterizedTest()
     @DisplayName("Exchange money command not valid exception should be thrown")
     @MethodSource("invalidExchangeAccountCommands")
