@@ -42,6 +42,6 @@ public interface AccountMapper {
                 .toList();
     }
 
-    @Mapping(source = "dto.amount", target = "amount", qualifiedByName = "doubleToBigDecimal")
+    @Mapping(source = "dto.oldCurrencyAmount", target = "oldCurrencyAmount", qualifiedByName = "doubleToBigDecimal")
     ExchangeMoneyCommand toCommand(ExchangeMoneyCommandDto dto, UUID accountId);
 }

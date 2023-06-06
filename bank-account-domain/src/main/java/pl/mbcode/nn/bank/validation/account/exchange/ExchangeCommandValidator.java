@@ -15,6 +15,7 @@ public class ExchangeCommandValidator implements Validator<ExchangeMoneyCommand>
     public List<ValidationRule<ExchangeMoneyCommand>> getRules() {
         return List.of(
                 new OneOfCurrencyMustBePln(),
+                new CurrencyMustBeDifferent(),
                 new AmountMustBePositive()
         );
     }

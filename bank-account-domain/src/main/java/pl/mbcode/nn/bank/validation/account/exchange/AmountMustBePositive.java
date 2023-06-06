@@ -4,11 +4,12 @@ import pl.mbcode.nn.bank.command.ExchangeMoneyCommand;
 import pl.mbcode.nn.bank.validation.ValidationRule;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 class AmountMustBePositive implements ValidationRule<ExchangeMoneyCommand> {
     @Override
     public void validate(ExchangeMoneyCommand input) {
-        if (BigDecimal.ZERO.compareTo(input.getAmount()) > 0) {
+        if (Objects.isNull(input.getOldCurrencyAmount()) || BigDecimal.ZERO.compareTo(input.getOldCurrencyAmount()) >= 0) {
             throw new ExchangeCommandNotValidException("POSITIVE_AMOUNT_REQUIRED", "Amount must be positive number");
         }
     }

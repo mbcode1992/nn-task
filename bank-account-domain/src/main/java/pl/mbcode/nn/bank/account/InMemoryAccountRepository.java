@@ -7,7 +7,7 @@ import java.util.UUID;
 
 class InMemoryAccountRepository implements AccountRepository {
 
-    private final static Map<UUID, Account> accountMap = new HashMap<>();
+    private static final Map<UUID, Account> accountMap = new HashMap<>();
 
     @Override
     public Account save(Account account) {

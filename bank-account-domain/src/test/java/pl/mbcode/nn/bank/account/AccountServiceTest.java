@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import pl.mbcode.nn.bank.command.CreateAccountCommand;
 import pl.mbcode.nn.bank.command.ExchangeMoneyCommand;
 import pl.mbcode.nn.bank.validation.account.create.CreateCommandNotValidException;
+import pl.mbcode.nn.bank.validation.account.exchange.ExchangeCommandNotValidException;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -26,6 +27,13 @@ class AccountServiceTest {
             .accountRepository(accountRepository)
             .exchangeRateProvider((oldCurrency, newCurrency) -> 4.1933)
             .build();
+
+    private static Account simpleAccount() {
+        return Account.builder()
+                .owner(new Owner("name", "surname"))
+                .balances(new HashMap<>(Map.of(Currency.USD, BigDecimal.TEN)))
+                .build();
+    }
 
     @BeforeEach
     void before() {
@@ -84,7 +92,6 @@ class AccountServiceTest {
 
 //        then
         assertThrows(CreateCommandNotValidException.class, executable);
-
     }
 
     private static Stream<CreateAccountCommand> invalidCreateAccountCommands() {
@@ -95,6 +102,14 @@ class AccountServiceTest {
                         .build(),
                 CreateAccountCommand.builder()
                         .ownerSurname("value")
+                        .build(),
+                CreateAccountCommand.builder()
+                        .ownerName("value")
+                        .initialBalanceInPLN(BigDecimal.ONE)
+                        .build(),
+                CreateAccountCommand.builder()
+                        .ownerSurname("value")
+                        .initialBalanceInPLN(BigDecimal.ONE)
                         .build(),
                 CreateAccountCommand.builder()
                         .initialBalanceInPLN(BigDecimal.ONE)
@@ -111,10 +126,7 @@ class AccountServiceTest {
     @DisplayName("Should return account by id")
     void getById() {
 //        given
-        Account account = Account.builder()
-                .owner(new Owner("name", "surname"))
-                .balances(Map.of(Currency.USD, BigDecimal.TWO))
-                .build();
+        Account account = simpleAccount();
         accountRepository.save(account);
 
 //        when
@@ -141,16 +153,13 @@ class AccountServiceTest {
     @DisplayName("Should exchange money")
     void successExchange() {
 //        given
-        Account account = Account.builder()
-                .owner(new Owner("name", "surname"))
-                .balances(new HashMap<>(Map.of(Currency.USD, BigDecimal.TEN)))
-                .build();
+        Account account = simpleAccount();
         accountRepository.save(account);
         ExchangeMoneyCommand command = ExchangeMoneyCommand.builder()
                 .oldCurrency(Currency.USD)
                 .newCurrency(Currency.PLN)
                 .accountId(account.getId())
-                .amount(BigDecimal.ONE)
+                .oldCurrencyAmount(BigDecimal.ONE)
                 .build();
 
 //        when
@@ -160,6 +169,64 @@ class AccountServiceTest {
         assertAll(
                 () -> assertEquals(9.00, accountAfterExchange.getBalances().get(Currency.USD).doubleValue()),
                 () -> assertEquals(4.19, accountAfterExchange.getBalances().get(Currency.PLN).doubleValue())
+        );
+    }
+
+    @Test
+    @DisplayName("Should throw InsufficientAccountBalanceException")
+    void unInsufficientAccountBalanceException() {
+//        given
+        Account account = simpleAccount();
+        accountRepository.save(account);
+        ExchangeMoneyCommand command = ExchangeMoneyCommand.builder()
+                .oldCurrency(Currency.USD)
+                .newCurrency(Currency.PLN)
+                .accountId(account.getId())
+                .oldCurrencyAmount(BigDecimal.valueOf(12))
+                .build();
+
+//        when
+        Executable executable = () -> accountService.exchangeMoney(command);
+
+//        then
+        assertThrows(InsufficientAccountBalanceException.class, executable);
+    }
+
+    @ParameterizedTest()
+    @DisplayName("Exchange money command not valid exception should be thrown")
+    @MethodSource("invalidExchangeAccountCommands")
+    void invalidExchangeMoneyCommand(ExchangeMoneyCommand command) {
+//        given
+//        when
+        Executable executable = () -> accountService.exchangeMoney(command);
+
+//        then
+        assertThrows(ExchangeCommandNotValidException.class, executable);
+    }
+
+    private static Stream<ExchangeMoneyCommand> invalidExchangeAccountCommands() {
+        return Stream.of(
+                ExchangeMoneyCommand.builder().build(),
+                ExchangeMoneyCommand.builder()
+                        .oldCurrency(Currency.USD)
+                        .build(),
+                ExchangeMoneyCommand.builder()
+                        .newCurrency(Currency.PLN)
+                        .build(),
+                ExchangeMoneyCommand.builder()
+                        .oldCurrency(Currency.PLN)
+                        .newCurrency(Currency.PLN)
+                        .build(),
+                ExchangeMoneyCommand.builder()
+                        .oldCurrency(Currency.PLN)
+                        .newCurrency(Currency.PLN)
+                        .oldCurrencyAmount(BigDecimal.ONE)
+                        .build(),
+                ExchangeMoneyCommand.builder()
+                        .oldCurrency(Currency.PLN)
+                        .newCurrency(Currency.USD)
+                        .oldCurrencyAmount(BigDecimal.ZERO)
+                        .build()
         );
     }
 }

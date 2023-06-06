@@ -41,14 +41,14 @@ class Account {
     protected void exchangeMoney(ExchangeMoneyCommand command, double exchangeRate) {
         log.debug("Exchanging money with following parameters {} and exchangeRate {} ", command.toString(), exchangeRate);
         BigDecimal currentBalance = balances.getOrDefault(command.getOldCurrency(), BigDecimal.ZERO);
-        if (currentBalance.compareTo(command.getAmount()) <= 0) {
+        if (currentBalance.compareTo(command.getOldCurrencyAmount()) <= 0) {
             throw new InsufficientAccountBalanceException(currentBalance, command.getOldCurrency());
         }
-        BigDecimal exchangedAmount = command.getAmount()
+        BigDecimal exchangedAmount = command.getOldCurrencyAmount()
                 .multiply(BigDecimal.valueOf(exchangeRate))
                 .setScale(2, RoundingMode.HALF_UP);
         addBalance(command.getNewCurrency(), exchangedAmount);
-        reduceBalance(command.getOldCurrency(), command.getAmount());
+        reduceBalance(command.getOldCurrency(), command.getOldCurrencyAmount());
     }
 
     private void reduceBalance(Currency currency, BigDecimal amount) {

@@ -4,7 +4,7 @@ import java.util.UUID;
 
 interface AccountRepository {
 
-    Account save(Account cart);
+    Account save(Account account);
 
     Account getById(UUID id);
 }

@@ -20,11 +20,12 @@ class AccountController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Account createAccount(
+    public AccountDto createAccount(
             @RequestBody CreateAccountCommandDto dto
     ) {
         CreateAccountCommand command = AccountMapper.get().toCommand(dto);
-        return accountService.create(command);
+        Account account = accountService.create(command);
+        return AccountMapper.get().toDto(account);
     }
 
     @GetMapping("/{id}")

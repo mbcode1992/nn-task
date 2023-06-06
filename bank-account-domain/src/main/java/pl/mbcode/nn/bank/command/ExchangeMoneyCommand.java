@@ -14,7 +14,7 @@ import java.util.UUID;
 public class ExchangeMoneyCommand {
 
     private final UUID accountId;
-    private final BigDecimal amount;
+    private final BigDecimal oldCurrencyAmount;
     private final Currency oldCurrency;
     private final Currency newCurrency;
 
